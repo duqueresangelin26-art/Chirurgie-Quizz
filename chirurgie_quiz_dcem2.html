@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHIRURGIE · DCEM II · Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --red: #e63946;
+    --orange: #f4a261;
+    --gold: #e9c46a;
+    --teal: #2a9d8f;
+    --blue: #457b9d;
+    --correct: #2a9d8f;
+    --wrong: #e63946;
+    --text: #f1f1f3;
+    --muted: #6b6b80;
+    --glow-red: 0 0 40px rgba(230,57,70,0.12);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ANIMATED BG GRID */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(230,57,70,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(230,57,70,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridScroll 20s linear infinite;
+  }
+
+  @keyframes gridScroll {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
+  }
+
+  /* SPLASH */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background: var(--bg);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  #splash.out { opacity: 0; transform: scale(0.97); pointer-events: none; }
+
+  .splash-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .splash-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(5rem, 15vw, 10rem);
+    letter-spacing: -2px;
+    line-height: 0.9;
+    color: #fff;
+    margin-bottom: 4px;
+    animation: fadeUp 0.6s ease 0.1s both;
+    position: relative;
+  }
+
+  .splash-title span {
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .splash-sub {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .splash-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    max-width: 380px;
+    width: 100%;
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .splash-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 12px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .splash-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), var(--orange));
+  }
+
+  .splash-card .n {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.8rem;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .splash-card .l {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .btn-start {
+    padding: 18px 64px;
+    background: var(--red);
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+
+  .btn-start::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.4s;
+  }
+
+  .btn-start:hover::before { left: 100%; }
+  .btn-start:hover { background: #c1121f; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(230,57,70,0.4); }
+
+  /* QUIZ WRAPPER */
+  #quiz-wrap { display: none; position: relative; z-index: 1; }
+
+  /* TOP BAR */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .topbar-logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.3rem;
+    color: var(--red);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--orange));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 8px var(--red);
+  }
+
+  .score-display {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .score-c { color: var(--correct); }
+  .score-w { color: var(--wrong); }
+  .score-n { color: var(--muted); }
+
+  /* MAIN CONTENT */
+  .main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* CAS CLINIQUE BANNER */
+  .cas-banner {
+    background: linear-gradient(135deg, rgba(230,57,70,0.08), rgba(244,162,97,0.05));
+    border: 1px solid rgba(230,57,70,0.2);
+    border-left: 3px solid var(--red);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .cas-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .cas-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #a0a0b8;
+  }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    animation: slideCard 0.45s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: var(--glow-red), 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .q-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--orange), var(--gold));
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .q-num {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+
+  .q-cat {
+    font-size: 9px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(244,162,97,0.3);
+    color: var(--orange);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .q-text {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.2rem;
+    line-height: 1.65;
+    color: #eeeef5;
+    margin-bottom: 24px;
+  }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 9px; }
+
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .opt-letter {
+    min-width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.18s;
+    margin-top: 1px;
+  }
+
+  .opt:not(.locked):hover {
+    border-color: var(--red);
+    background: rgba(230,57,70,0.07);
+    transform: translateX(5px);
+  }
+
+  .opt:not(.locked):hover .opt-letter {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .opt.correct {
+    border-color: var(--correct);
+    background: rgba(42,157,143,0.1);
+    animation: flash-correct 0.5s ease;
+  }
+
+  .opt.correct .opt-letter {
+    background: var(--correct);
+    border-color: var(--correct);
+    color: #000;
+  }
+
+  .opt.wrong {
+    border-color: var(--wrong);
+    background: rgba(230,57,70,0.08);
+    animation: shake 0.35s ease;
+  }
+
+  .opt.wrong .opt-letter {
+    background: var(--wrong);
+    border-color: var(--wrong);
+    color: #fff;
+  }
+
+  .opt.locked { cursor: default; pointer-events: none; }
+
+  /* EXPLANATION */
+  .expl {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: rgba(42,157,143,0.06);
+    border: 1px solid rgba(42,157,143,0.2);
+    border-left: 3px solid var(--teal);
+    border-radius: 8px;
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .expl.show { display: block; }
+
+  .expl-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  .expl p {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    color: #7a9e9b;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  /* NEXT BTN */
+  .btn-next {
+    margin-top: 18px;
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    color: var(--red);
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .btn-next.show { display: block; animation: fadeUp 0.4s ease; }
+  .btn-next:hover { background: var(--red); color: #fff; box-shadow: 0 8px 30px rgba(230,57,70,0.3); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.up { transform: translateX(-50%) translateY(0); }
+  .toast.ok { background: var(--correct); color: #fff; }
+  .toast.ko { background: var(--wrong); color: #fff; }
+
+  /* RESULTS */
+  #results {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #results.show { display: flex; }
+
+  .result-inner {
+    max-width: 600px;
+    width: 100%;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .result-badge {
+    font-size: 9px;
+    letter-spacing: 5px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .result-big {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(5rem, 15vw, 9rem);
+    line-height: 1;
+    background: linear-gradient(135deg, var(--red), var(--orange), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .result-msg {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: #f1f1f3;
+    margin-bottom: 6px;
+  }
+
+  .result-sub { color: var(--muted); font-size: 12px; margin-bottom: 40px; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-box::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-box.tot::after { background: var(--blue); }
+  .stat-box.cor::after { background: var(--correct); }
+  .stat-box.err::after { background: var(--wrong); }
+
+  .stat-val {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .stat-val.tot { color: var(--blue); }
+  .stat-val.cor { color: var(--correct); }
+  .stat-val.err { color: var(--wrong); }
+
+  .stat-lbl { font-size: 9px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+
+  .btn-restart {
+    padding: 16px 48px;
+    background: var(--red);
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.3rem;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-restart:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(230,57,70,0.4); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideCard { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes flash-correct { 0%,100%{transform:scale(1)} 50%{transform:scale(1.008)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+
+  @media(max-width:480px) {
+    .q-card { padding: 18px; }
+    .q-text { font-size: 1.05rem; }
+    .opt { font-size: 11px; }
+    .topbar-logo { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-eyebrow">UNIFA · Dr Evens Lubin</div>
+  <div class="splash-title">CHIR<span>URGIE</span></div>
+  <div class="splash-sub">Pathologie Chirurgicale · Urgences · Cas Cliniques</div>
+  <div class="splash-cards">
+    <div class="splash-card"><div class="n">50+</div><div class="l">Questions</div></div>
+    <div class="splash-card"><div class="n">8</div><div class="l">Chapitres</div></div>
+    <div class="splash-card"><div class="n">CAS</div><div class="l">Cliniques</div></div>
+    <div class="splash-card"><div class="n">QCM</div><div class="l">Chirurgie</div></div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">COMMENCER →</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-wrap">
+  <div class="topbar">
+    <div class="topbar-logo">CHIRURGIE</div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+    <div class="score-display">
+      <span class="score-c">✓<span id="sc">0</span></span>
+      <span class="score-w">✗<span id="sw">0</span></span>
+      <span class="score-n"><span id="sn">1</span>/<span id="st">1</span></span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="cas-box" class="cas-banner" style="display:none">
+      <div class="cas-label">📋 CAS CLINIQUE</div>
+      <div class="cas-text" id="cas-text"></div>
+    </div>
+
+    <div class="q-card" id="q-card">
+      <div class="q-meta">
+        <div class="q-num" id="q-num">QUESTION 1</div>
+        <div class="q-cat" id="q-cat"></div>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="q-opts"></div>
+      <div class="expl" id="q-expl">
+        <div class="expl-label">📖 Correction</div>
+        <p id="q-expl-text"></p>
+      </div>
+      <button class="btn-next" id="btn-next" onclick="next()">QUESTION SUIVANTE →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="result-inner">
+    <div class="result-badge">RÉSULTATS · CHIRURGIE DCEM II</div>
+    <div class="result-big" id="res-pct">0%</div>
+    <div class="result-msg" id="res-msg"></div>
+    <div class="result-sub" id="res-sub"></div>
+    <div class="stat-row">
+      <div class="stat-box tot"><div class="stat-val tot" id="r-tot">0</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-box cor"><div class="stat-val cor" id="r-cor">0</div><div class="stat-lbl">Correct</div></div>
+      <div class="stat-box err"><div class="stat-val err" id="r-err">0</div><div class="stat-lbl">Faux</div></div>
+    </div>
+    <button class="btn-restart" onclick="restart()">↺ RECOMMENCER</button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+// cas: cas clinique context (string or null)
+// q: question text
+// opts: array of options
+// ans: correct index (0-based)
+// cat: category
+// exp: explanation
+
+const ALL_Q = [
+
+  // ====== CAS A: MARIA - OCCLUSION SUR BRIDE ======
+  {cas:"Maria, 30 ans, G2P2A0, antécédent de laparotomie à 25 ans pour péritonite appendiculaire. Présente aux urgences avec douleurs abdominales coliques intenses, vomissements, abdomen très distendu, cicatrice médiane, BHA accélérés, n'a pas déféqué depuis 2 jours.",
+   cat:"Chirurgie abdominale", q:"Quel est votre diagnostic ?",
+   opts:["Cancer du côlon","Occlusion intestinale fonctionnelle","Étranglement herniaire","Occlusion intestinale sur bride","Plastron appendiculaire"],
+   ans:3, exp:"L'antécédent de laparotomie + cicatrice médiane + tableau occlusif (douleurs coliques, vomissements, arrêt des matières) orientent fortement vers une occlusion sur bride (adhérence post-chirurgicale). C'est la cause la plus fréquente d'occlusion mécanique après chirurgie abdominale."},
+
+  {cas:null, cat:"Chirurgie abdominale",
+   q:"Lequel de ces examens paracliniques pourrait mieux vous aider à confirmer l'impression diagnostique d'occlusion ?",
+   opts:["Xray du thorax","Sonographie abdominale","Xray de l'abdomen sans préparation (ASP)","Hémogramme complet","Bilan rénal"],
+   ans:2, exp:"L'ASP (Abdomen Sans Préparation) est l'examen de choix en urgence pour l'occlusion intestinale. Il montre les niveaux hydro-aériques (NHA) caractéristiques. Il est rapide, disponible et peu coûteux."},
+
+  {cas:null, cat:"Chirurgie abdominale",
+   q:"Quelle anomalie paraclinique comptes-tu retrouver à l'ASP ?",
+   opts:["Anémie sévère","Niveaux hydro-aériques","Créatinine très élevée","Dilatation des voies biliaires","Pneumothorax"],
+   ans:1, exp:"L'ASP dans l'occlusion intestinale montre des niveaux hydro-aériques (NHA) : niveaux de liquide avec bulle de gaz au-dessus, visibles en position debout ou en décubitus latéral. Leur topographie oriente sur le siège de l'occlusion (grêle vs côlon)."},
+
+  // ====== CAS B: ULCUS PERFORÉ ======
+  {cas:"Patient de 32 ans aux urgences pour douleurs abdominales intenses, début brutal 'coup de poignard' à la région épigastrique. Antécédents de pyrosis et douleur épigastrique récurrente soulagée par les aliments alcalins. À l'examen: tachycardie, TA 90/65 mmHg, abdomen très douloureux aux 4 quadrants, défense et rebond positifs, matité pré-hépatique diminuée à la percussion.",
+   cat:"Chirurgie abdominale", q:"Quel est votre diagnostic ?",
+   opts:["Cholécystite aiguë","Perforation typhique","Ulcus perforé","Pancréatite aiguë","Appendicite aiguë"],
+   ans:2, exp:"Le tableau clinique est typique de l'ulcus perforé : antécédent ulcéreux, douleur épigastrique en 'coup de poignard' à début brutal, pneumopéritoine (disparition de la matité pré-hépatique), défense et rebond (irritation péritonéale). La TA basse signe le choc."},
+
+  {cas:null, cat:"Chirurgie abdominale",
+   q:"Quel examen paraclinique simple et rapide peut vous aider à corroborer cette impression clinique d'ulcus perforé ?",
+   opts:["Xray thorax (ou ASP debout)","Hémogramme complet","Sang occulte dans les selles","Coloscopie","Sonographie abdominale"],
+   ans:0, exp:"La radiographie thoracique (ou ASP en position debout) est l'examen clé. Elle montre un pneumopéritoine (croissant gazeux sous-diaphragmatique), pathognomonique de perforation d'organe creux. Présent dans 70-80% des ulcus perforés."},
+
+  {cas:null, cat:"Chirurgie abdominale",
+   q:"Quel signe paraclinique faut-il rechercher à l'examen radiologique choisi pour l'ulcus perforé ?",
+   opts:["Masse à la région pelvienne","Niveau hydro-aérique","Croissant gazeux sous-diaphragmatique","Distension des voies biliaires","Masse colique"],
+   ans:2, exp:"Le croissant gazeux sous-diaphragmatique (pneumopéritoine) est LE signe radiologique de perforation d'organe creux. Il se voit entre le foie et le diaphragme droit sur la radio de thorax ou l'ASP debout."},
+
+  // ====== CHOLÉCYSTITE & PATHOLOGIE BILIAIRE ======
+  {cas:null, cat:"Pathologie biliaire",
+   q:"Ces signes et symptômes sont révélateurs d'une cholécystite aiguë :",
+   opts:["Douleur sous-costale droite moins de 2h, vomissements, sans fièvre","Ictère, douleur à l'hypochondre droit et fièvre élevée avec frisson","Douleur sous-costale droite de plus de 6h d'évolution, vomissements et fièvre de 38° à 38,5°C (Triade de Charcot)","Triade de Dieulafoy et signe de Murphy","Aucune de ces réponses"],
+   ans:2, exp:"La cholécystite aiguë se présente classiquement par la triade : douleur en hypochondre droit > 6 heures (persistante, pas colique), fièvre modérée 38-38,5°C, nausées/vomissements + signe de Murphy positif (douleur à l'inspiration profonde lors de la palpation). L'ictère est plutôt l'apanage de la cholangite."},
+
+  {cas:null, cat:"Pathologie biliaire",
+   q:"Les signes du cholestase biliaire sont :",
+   opts:["Urines foncées, selles normales, prurit","Urines foncées, selles décolorées, prurit","Aucune de ces réponses"],
+   ans:1, exp:"La cholestase (obstruction des voies biliaires) produit la triade classique : urines foncées (bilirubine conjuguée filtrée), selles décolorées (absence de stercobiline), prurit (dépôt de sels biliaires dans la peau). C'est le signe d'un ictère obstructif."},
+
+  {cas:null, cat:"Pathologie biliaire",
+   q:"La loi de Courvoisier se rencontre dans la :",
+   opts:["Fistule anale","Une tumeur du pancréas","Aucune de ces réponses"],
+   ans:1, exp:"La loi de Courvoisier-Terrier stipule que chez un patient ictérique avec une vésicule biliaire palpable et non douloureuse, la cause est une tumeur de la tête du pancréas (et non une lithiase, car une vésicule lithiasique est scléroatrophique et ne se distend pas)."},
+
+  {cas:null, cat:"Pathologie biliaire",
+   q:"Chez un ictérique, la palpation d'une grosse vésicule est en faveur d'un :",
+   opts:["Cancer du hile","Cancer de la queue du pancréas","Ampullome","Cholangio-carcinome","Cancer de la tête du pancréas (Courvoisier-Terrier)"],
+   ans:4, exp:"La loi de Courvoisier: ictère + vésicule palpable + indolore = tumeur de la tête du pancréas comprimant la voie biliaire principale. La vésicule peut se distendre car elle n'est pas remaniée par des lithiases chroniques."},
+
+  // ====== PANCRÉATITE AIGUË ======
+  {cas:null, cat:"Pancréatite aiguë",
+   q:"Concernant les caractéristiques sémiologiques de la douleur dans la pancréatite aiguë :",
+   opts:["Souvent soulagée avec les repas","Jamais soulagée par les repas","Très rare épisodes de vomissement","Fièvre élevée dès le début","Siège à la fosse iliaque droite"],
+   ans:1, exp:"La douleur de pancréatite aiguë est caractéristique : épigastrique, transfixiante (irradiant en barre vers le dos), exacerbée par l'alimentation (jamais soulagée par les repas), position antalgique en chien de fusil. Les vomissements sont au contraire très fréquents."},
+
+  {cas:null, cat:"Pancréatite aiguë",
+   q:"Les propositions suivantes concernant le diagnostic de pancréatite aiguë sont fausses, SAUF :",
+   opts:["Une élévation >3N de l'amylase est nécessaire pour affirmer le diagnostic","Une élévation >3N de la lipase signifie toujours qu'il y a une pancréatite aiguë","Un patient ayant une élévation asymptomatique de lipase doit être suivi régulièrement","60% des PA ont pour cause soit la consommation de médicaments","Un ulcère perforé peut mimer le diagnostic"],
+   ans:4, exp:"Un ulcère perforé peut effectivement mimer une pancréatite aiguë car la perforation peut entraîner une élévation de l'amylase. C'est pourquoi l'ASP (pneumopéritoine) est important. Les autres propositions sont fausses: la lipasémie >3N EST le critère diagnostique, pas l'amylasémie."},
+
+  {cas:null, cat:"Pancréatite aiguë",
+   q:"Concernant les pancréatites aiguës, quelle est la proposition exacte ?",
+   opts:["Le gold standard du diagnostic repose sur l'association syndrome douloureux abdominal aigu intense + élévation lipasémie supérieure à 3x la normale dans les 48h","L'échographie abdominale est l'examen de référence en urgence dans le diagnostic de pancréatite aiguë","Un taux supérieur à 3 fois la valeur de l'Amylasémie au moment du diagnostic est retenu comme facteur pronostique","La mortalité est nulle chez les malades de grade Balthazar E avec indice de Ranson supérieur à 6","La pancréatite aiguë alcoolique survient surtout en cas de consommation massive"],
+   ans:0, exp:"Le diagnostic de pancréatite aiguë repose sur 2 critères sur 3: (1) douleur abdominale typique, (2) lipasémie > 3N, (3) signes morphologiques (TDM). L'échographie dépiste la lithiase mais n'est pas le gold standard pour le parenchyme pancréatique (c'est le TDM avec injection)."},
+
+  // ====== APPENDICITE ======
+  {cas:null, cat:"Appendicite",
+   q:"Ces signes et symptômes sont révélateurs d'une appendicite aiguë :",
+   opts:["Douleur épigastrique irradiée à la fosse iliaque droite","Fièvre, diarrhée suivie de douleur épigastrique","Douleur sous-costale droit de plus de 6h, vomissements et fièvre de 38°-38,5°C","Douleur, contracture et hyperesthésie à la fosse iliaque droite","Aucune de ces réponses"],
+   ans:3, exp:"L'appendicite aiguë se manifeste par: douleur à la FID (point de Mac Burney), défense ou contracture localisée, hyperesthésie cutanée, signe de Blumberg (rebond positif), nausées, fièvre modérée 37,5-38,5°C, leucocytose. La douleur migre classiquement de l'épigastre vers la FID (signe de Kummel)."},
+
+  {cas:null, cat:"Appendicite",
+   q:"Quelle est la méthode de traitement préférentielle pour une appendicite perforée avec péritonite ?",
+   opts:["Appendicectomie par laparotomie","Traitement exclusif par antibiotiques","Appendicectomie par cœlioscopie","Voie de Mc Burney","Réhydratation et analgésiques"],
+   ans:0, exp:"Pour une appendicite perforée avec péritonite généralisée, la laparotomie (voie médiane) est préférée à la cœlioscopie car elle permet un lavage péritonéal plus efficace et une meilleure exploration de la cavité abdominale. La cœlioscopie est indiquée pour les appendicites non compliquées."},
+
+  // ====== HERNIES ======
+  {cas:null, cat:"Pathologie herniaire",
+   q:"Une hernie simple est une masse :",
+   opts:["Pulsatile, réductible au niveau d'une faille","Masse impulsive et réductible","Les 2 réponses sont variées (a et b sont vraies)"],
+   ans:2, exp:"Une hernie simple est caractérisée par : masse impulsive à la toux (augmente avec l'effort), réductible (rentre dans l'abdomen), pulsatile parfois. Ces deux caractéristiques a et b sont correctes, ce qui est noté comme 'les 2 réponses sont variées'."},
+
+  {cas:null, cat:"Pathologie herniaire",
+   q:"L'engouement herniaire est une masse :",
+   opts:["Non réductible associée à des signes d'occlusion intestinale","Réductible associée à des signes d'occlusion intestinale","Aucune de ces réponses"],
+   ans:0, exp:"L'engouement herniaire est une hernie qui n'est plus réductible (irréductible) sans encore de souffrance vasculaire du contenu. Si non traitée, évolue vers l'étranglement herniaire avec ischémie et signes d'occlusion + signes infectieux."},
+
+  {cas:null, cat:"Pathologie herniaire",
+   q:"La hernie inguinale se retrouve :",
+   opts:["Au-dessus de la ligne de Malgaigne","Au-dessous de la ligne de Malgaigne","Aucune de ses réponses"],
+   ans:0, exp:"La hernie inguinale se retrouve AU-DESSUS de la ligne de Malgaigne (ligne reliant l'épine iliaque antéro-supérieure à l'épine du pubis). La hernie crurale (fémorale) se retrouve en dessous. Ce repère anatomique est fondamental en clinique."},
+
+  {cas:null, cat:"Pathologie herniaire",
+   q:"Les signes cliniques d'une hernie étranglée :",
+   opts:["Douleur abdominale","Signes d'occlusion intestinale, vomissement, distension abdominale, transit conservé + masse irréductible","a et b sont vrais"],
+   ans:2, exp:"L'étranglement herniaire associe: (a) douleur locale intense et soudaine + (b) tableau occlusif complet (arrêt des matières et des gaz, vomissements, distension abdominale) + masse irréductible et douloureuse. Les deux propositions sont correctes. C'est une urgence chirurgicale absolue."},
+
+  // ====== PATHOLOGIE ANALE ======
+  {cas:null, cat:"Pathologie ano-rectale",
+   q:"La fissure anale est caractérisée par une douleur :",
+   opts:["Permanente, pulsatile et insomniante","Pendant et après défécation à type de déchirure","Aucune de ces réponses"],
+   ans:1, exp:"La fissure anale donne une douleur caractéristique : vive, à type de déchirure ou de brûlure, déclenchée par et persistant après la défécation (pendant et après). Durée variable, souvent plusieurs heures. La douleur permanente/pulsatile et insomniante est plutôt le tableau d'un abcès ano-rectal."},
+
+  // ====== CANCER DU CÔLON ======
+  {cas:"Mr Yassine, 70 ans, fumeur, sans antécédent notable. Passage de sang dans les selles depuis quelques mois, difficultés à la défécation, selles de plus en plus fines, asthénie. Cancer du côlon retenu comme diagnostic probable.",
+   cat:"Oncologie chirurgicale", q:"L'examen paraclinique le plus utile pour le diagnostic est :",
+   opts:["Radiographie de l'abdomen sans préparation","Tomodensitométrie à émission de positrons (TEP)","Scintigraphie","Endoscopie digestive basse et biopsies","Aucune réponse"],
+   ans:3, exp:"Le gold standard pour le diagnostic du cancer du côlon est la coloscopie totale avec biopsies. Elle permet de visualiser la lésion, de la localiser précisément, de prélever des biopsies pour examen anatomopathologique et de détecter d'éventuels polypes synchrones."},
+
+  {cas:null, cat:"Oncologie chirurgicale",
+   q:"En se basant sur le tableau clinique du patient (selles fines, rectorragies, asthénie), la localisation la plus probable du cancer est :",
+   opts:["Caecum","Sigmoïde","Transverse","Ascendant","Toutes les réponses"],
+   ans:1, exp:"Les selles de plus en plus fines + rectorragies + difficultés à la défécation + tableau sub-occlusif orientent vers un cancer du sigmoïde ou du rectosigmoïde (côlon gauche). Le côlon droit (caecum, ascendant) donne plutôt une anémie ferriprive et des douleurs sans trouble du transit marqué."},
+
+  {cas:null, cat:"Oncologie chirurgicale",
+   q:"Dans ce contexte de cancer du côlon, il s'agirait d'une forme de cancer :",
+   opts:["Héréditaire sans polypose","Sporadique","Polypose familiale","Toutes les réponses","Aucune réponse"],
+   ans:1, exp:"En l'absence d'antécédents familiaux et de polypose connue, et à 70 ans, il s'agit très probablement d'un cancer sporadique (80% des cancers colorectaux). Les formes héréditaires (HNPCC/Lynch, FAP) surviennent plus tôt et ont un contexte familial positif."},
+
+  // ====== INVAGINATION INTESTINALE AIGUË ======
+  {cas:"Nourrisson de 4 mois admis pour syndrome grippal évoluant depuis 5 jours. Ce matin: très irrité, pleure sans cesse, refuse les seins, vomissements. Abdomen un peu distendu, 2 selles sanguinolentes. Masse palpée au flanc droit.",
+   cat:"Chirurgie pédiatrique", q:"Qu'est-ce qu'il a d'après vous ?",
+   opts:["Fécalome","Invagination intestinale","Hernie du flanc droit","Occlusion intestinale sur brides","Appendicite aiguë"],
+   ans:1, exp:"L'invagination intestinale aiguë (IIA) du nourrisson est le diagnostic. Triade classique: crises de pleurs paroxystiques avec accalmies, vomissements, selles sanglantes en 'gelée de groseille'. La masse palpable au flanc droit est l'invaginat. Touche surtout les nourrissons de 3 mois à 2 ans, souvent après une virose."},
+
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"Lequel de ces examens paracliniques pourrait mieux vous aider à confirmer le diagnostic d'invagination intestinale ?",
+   opts:["Radiographie du thorax","Sonographie abdominale","Radiographie de l'abdomen sans préparation","Hémogramme complet","Bilan rénal"],
+   ans:1, exp:"L'échographie abdominale est l'examen de référence pour l'IIA. Elle montre le signe pathognomonique de la 'cible' ou 'cocarde' (image en 'target sign') en coupe transversale, correspondant à l'intestin invaginé dans l'intestin receveur. Sensibilité > 95%."},
+
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"Quelle anomalie paraclinique comptes-tu retrouver à l'échographie dans l'invagination ?",
+   opts:["Anémie sévère","Niveaux hydro-aériques","Image en sandwich (ou cocarde/cible)","Dilatation des voies biliaires","Pneumothorax"],
+   ans:2, exp:"L'image en 'sandwich' ou 'cocarde' est le signe échographique de l'IIA. En coupe longitudinale, on voit l'image en sandwich (superposition de couches d'intestin). En coupe transversale, l'image de 'cible' ou 'pseudo-rein'. C'est un signe pathognomonique."},
+
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"À l'ASP dans l'invagination intestinale aiguë chez le nourrisson, quel signe radiologique peut-on trouver ?",
+   opts:["Niveau hydro-aériques","Distension des anses","Déshabituation de la fosse iliaque droite","Toutes les réponses précédentes","Aucune de ces réponses"],
+   ans:3, exp:"L'ASP dans l'IIA peut montrer plusieurs signes: disparition/effacement de l'ombre cæcale (déshabituation de la FID), masse de densité tissulaire, distension des anses en amont, et parfois niveaux hydro-aériques si occlusion associée. Tous ces signes peuvent coexister."},
+
+  // ====== HIRSCHSPRUNG ======
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"Parmi les symptômes suivants de la maladie de Hirschsprung chez les nouveau-nés, lequel est le plus évident ou signe suivant d'un examen rectal numérique ?",
+   opts:["Rectum rempli lors d'un examen rectal numérique","Incapacité à éliminer le méconium au cours des 48 premières heures de vie","Absence de besoin physiologique de déféquer","Constipation légère avec épisodes intermittents de diarrhée légère","Aucune réponse"],
+   ans:1, exp:"Le signe le plus évident de la maladie de Hirschsprung chez le nouveau-né est le retard d'émission du méconium > 48h (normalement < 24h). À l'examen rectal: rectum vide (zone aganglionnaire), suivi d'une émission explosive de méconium à la décompression = très évocateur."},
+
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"Quelle est la méthode définitive pour diagnostiquer la maladie de Hirschsprung afin de prévoir un traitement chirurgical ?",
+   opts:["Étude radiographique après lavement baryté","Biopsie chirurgicale de la paroi rectale","Manométrie rectale","Coloscopie"],
+   ans:1, exp:"La biopsie rectale (transanale) avec étude histologique est le gold standard diagnostique. Elle confirme l'absence de cellules ganglionnaires (aganglionose) dans les plexus d'Auerbach et de Meissner. La manométrie ano-rectale est utile mais la biopsie reste la référence définitive."},
+
+  // ====== VOLVULUS DU SIGMOÏDE ======
+  {cas:null, cat:"Urgences chirurgicales",
+   q:"Un volvulus du sigmoïde est une pathologie grave. Parmi les situations suivantes, lesquelles constituent des signes de gravité, SAUF :",
+   opts:["Distension asymétrique de l'abdomen","Fièvre élevée","Contracture abdominale","Choc","Altération de l'état général"],
+   ans:0, exp:"La distension asymétrique de l'abdomen est en fait un signe CLASSIQUE du volvulus du sigmoïde (abdomen en 'ballon de football' asymétrique), pas un signe de gravité particulier. Les signes de gravité sont : fièvre (ischémie/péritonite), contracture (perforation), choc hémodynamique, altération état général."},
+
+  // ====== PATHOLOGIE DIVERTICULAIRE ET DIGESTIVE ======
+  {cas:null, cat:"Chirurgie digestive",
+   q:"Les pathologies du côlon peuvent être à la base de troubles de la coagulation :",
+   opts:["Oui, de trouble de la coagulation","Elles n'ont aucun lien avec ces troubles","a et b sont fausses"],
+   ans:0, exp:"Les pathologies coliques (cancer, MII, colite) peuvent être à la base de troubles de la coagulation par : anémie sévère par saignement chronique, déficit en vitamine K par malabsorption, activation de la coagulation dans les processus néoplasiques (état pro-coagulant), et par réaction systémique inflammatoire."},
+
+  {cas:null, cat:"Chirurgie digestive",
+   q:"Les problèmes hépatiques peuvent être responsables de :",
+   opts:["La formation d'ulcère gastroduodénal","L'ulcère gastroduodénal est causé seulement par H. pylori","a et b sont fausses"],
+   ans:0, exp:"L'insuffisance hépatique peut conduire à la formation d'ulcères gastroduodénaux par: déficit en synthèse des facteurs protecteurs (mucus, prostaglandines), hypergastrinémie (le foie dégrade normalement la gastrine), et les varices œsophagiennes peuvent coexister avec des ulcères. H. pylori n'est pas la seule cause."},
+
+  {cas:null, cat:"Chirurgie digestive",
+   q:"Le diverticule de Zenker, connu sous le nom de la maladie des deux, peut causer deux complications :",
+   opts:["Peut causer deux complications","Est formé de deux tissus ectopiques","a et b sont vraies","a, b, c sont fausses"],
+   ans:3, exp:"Le diverticule de Zenker est en réalité un pseudo-diverticule de pulsion pharyngo-œsophagien (uniquement muqueux, pas toutes les couches). Il n'est pas formé de deux tissus ectopiques (c'est plutôt le diverticule de Meckel). Les propositions a, b, c sont toutes inexactes dans leur formulation."},
+
+  {cas:null, cat:"Chirurgie digestive",
+   q:"La lithiase vésiculaire peut être causée par :",
+   opts:["La résection de l'iléon terminal","Le jeûne prolongé","a et b sont vraies"],
+   ans:2, exp:"Les deux causes sont correctes: (1) Résection de l'iléon terminal: diminue la réabsorption des sels biliaires → bile lithogène → lithiase cholestérolique. (2) Jeûne prolongé: stase biliaire (vésicule non stimulée) favorise la nucléation et la précipitation des cristaux de cholestérol. Les deux mécanismes sont réels."},
+
+  // ====== IMAGERIE MÉDICALE ======
+  {cas:null, cat:"Imagerie médicale",
+   q:"L'échographie doppler représente une valeur ajoutée à l'échographie. Que permet-elle d'examiner avec plus d'attention ?",
+   opts:["Observer les organes creux comme la vessie, la cavité utérine","Évaluer les poumons","Étudier les flux sanguins","Explorer les masses tumorales"],
+   ans:2, exp:"L'échographie Doppler permet d'étudier les flux sanguins (vélocimétrie, résistance vasculaire). Elle est indispensable pour : évaluer la vascularisation tumorale, étudier les flux portaux (HTP), analyser les flux fœtaux, détecter les thromboses veineuses, évaluer la perméabilité vasculaire."},
+
+  {cas:null, cat:"Imagerie médicale",
+   q:"Quelles molécules du corps humain utilisent les champs magnétiques pour constituer les images des organes à l'IRM ?",
+   opts:["Les molécules de graisse","Les molécules d'eau","Les molécules de calcium","Les molécules de phosphates"],
+   ans:1, exp:"L'IRM exploite les propriétés magnétiques des noyaux d'hydrogène (H) contenus principalement dans les molécules d'eau (H2O) et secondairement dans la graisse. Le signal IRM est basé sur la résonance magnétique nucléaire des protons d'hydrogène et leur relaxation après excitation par radiofréquences."},
+
+  {cas:null, cat:"Imagerie médicale",
+   q:"Pour laquelle des indications suivantes une demande d'ASP est nécessaire ?",
+   opts:["Cancer de la prostate","Constipation","Ingestion de corps étrangers","Cirrhose du foie","Fibrome calcifié"],
+   ans:2, exp:"L'ASP (Abdomen Sans Préparation) est indiqué pour l'ingestion de corps étrangers radio-opaques (métalliques, os) afin de les localiser. L'ASP est également utile pour: occlusion intestinale (NHA), calcifications abdominales, pneumopéritoine, calculs radio-opaques."},
+
+  {cas:null, cat:"Imagerie médicale",
+   q:"On suspecte une tumeur du foie, on veut étudier la vascularisation de cette lésion. Quelle modalité écrire sur la demande d'examen d'imagerie médicale ?",
+   opts:["ASP couché","Échographie abdominale","Échographie doppler","Scanner abdominal (TDM avec injection)"],
+   ans:2, exp:"Pour étudier la vascularisation d'une masse hépatique, l'échographie Doppler (ou Doppler couleur) est la modalité de choix en première intention. Elle permet d'analyser la vascularisation intra-tumorale, la présence de flux artériels ou veineux, et d'orienter vers la nature bénigne ou maligne de la lésion."},
+
+  // ====== DYSPHAGIE / URGENCES DIVERSES ======
+  {cas:"Madame X, 70 ans, hypertendue et diabétique, admise pour dysphagie soudaine pour les liquides remontant à 24h. TA 20/12, glycémie 200 mg/dl. L'examen physique a révélé une hémiplégie gauche.",
+   cat:"Urgences chirurgicales", q:"Quelle décision prendre face à ce tableau clinique ?",
+   opts:["Hospitalisation, une chirurgie d'urgence s'avère nécessaire pour pouvoir alimenter la patiente","Hospitalisation, un traitement médical lui sera proposé","Renvoi à la maison sur antihypertenseur et hypoglycémiant"],
+   ans:1, exp:"La dysphagie + hémiplégie gauche chez une hypertendue = AVC (accident vasculaire cérébral) probable. Le traitement est MÉDICAL (pas chirurgical pour l'AVC ischémique): hospitalisation en unité neurovasculaire, traitement antihypertenseur adapté, contrôle glycémique, évaluation pour thrombolyse selon critères. La chirurgie n'est pas indiquée en urgence pour l'AVC."},
+
+  // ====== PÉDIATRIE COMPLÉMENTAIRE ======
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"L'œdème 2+ des membres inférieurs intéresse :",
+   opts:["Les dos du pied jusqu'aux chevilles","Les dos du pied jusqu'à l'abdomen","Les dos du pied jusqu'aux jambes","Aucune"],
+   ans:2, exp:"La classification des œdèmes: 1+ = jusqu'aux chevilles, 2+ = jusqu'aux jambes (mi-mollet), 3+ = jusqu'aux genoux ou cuisses, 4+ = anasarque (généralisé, incluant ascite, épanchements). L'œdème 2+ intéresse le dos du pied jusqu'aux jambes."},
+
+  {cas:null, cat:"Chirurgie pédiatrique",
+   q:"Pour apprécier le degré de déshydratation chez un nourrisson, on va évaluer :",
+   opts:["Les muqueuses","Le signe du pli cutané","La paume des mains","Aucune"],
+   ans:1, exp:"Le signe du pli cutané (turgescence cutanée) est l'évaluation principale de la déshydratation chez le nourrisson. Un pli persistant > 2 secondes indique une déshydratation significative. On évalue aussi le fontanelle antérieure, les yeux, les muqueuses et le TRC, mais le pli est le test de référence."},
+];
+
+// ===== ENGINE =====
+let q_arr = [], idx = 0, sc = 0, sw = 0, answered = false;
+
+function shuffle(a) {
+  let arr = [...a];
+  for (let i = arr.length-1; i>0; i--) {
+    let j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  q_arr = shuffle(ALL_Q);
+  idx=0; sc=0; sw=0;
+  document.getElementById('splash').classList.add('out');
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('quiz-wrap').style.display = 'block';
+    document.getElementById('st').textContent = q_arr.length;
+    render();
+  }, 700);
+}
+
+function render() {
+  if (idx >= q_arr.length) { showResults(); return; }
+  answered = false;
+  const q = q_arr[idx];
+  const total = q_arr.length;
+
+  // Progress
+  const pct = Math.round((idx/total)*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('sc').textContent = sc;
+  document.getElementById('sw').textContent = sw;
+  document.getElementById('sn').textContent = idx+1;
+
+  // Cas clinique
+  const casBox = document.getElementById('cas-box');
+  if (q.cas) {
+    casBox.style.display = 'block';
+    document.getElementById('cas-text').textContent = q.cas;
+  } else {
+    casBox.style.display = 'none';
+  }
+
+  // Card animation
+  const card = document.getElementById('q-card');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'slideCard 0.45s cubic-bezier(0.4,0,0.2,1)';
+
+  document.getElementById('q-num').textContent = `QUESTION ${idx+1}`;
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.q;
+
+  const optsDiv = document.getElementById('q-opts');
+  optsDiv.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  q.opts.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => pick(i, btn);
+    optsDiv.appendChild(btn);
+  });
+
+  document.getElementById('q-expl').classList.remove('show');
+  document.getElementById('btn-next').classList.remove('show');
+}
+
+function pick(i, btn) {
+  if (answered) return;
+  answered = true;
+
+  const q = q_arr[idx];
+  const allBtns = document.querySelectorAll('.opt');
+  allBtns.forEach(b => b.classList.add('locked'));
+  allBtns[q.ans].classList.add('correct');
+
+  if (i === q.ans) {
+    sc++;
+    toast('✓ CORRECT !', 'ok');
+  } else {
+    btn.classList.add('wrong');
+    sw++;
+    toast('✗ FAUX', 'ko');
+  }
+
+  document.getElementById('sc').textContent = sc;
+  document.getElementById('sw').textContent = sw;
+  document.getElementById('q-expl-text').textContent = q.exp;
+  document.getElementById('q-expl').classList.add('show');
+  document.getElementById('btn-next').classList.add('show');
+}
+
+function next() {
+  idx++;
+  render();
+}
+
+function toast(msg, cls) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${cls} up`;
+  setTimeout(() => t.classList.remove('up'), 1800);
+}
+
+function showResults() {
+  document.getElementById('quiz-wrap').style.display = 'none';
+  const res = document.getElementById('results');
+  res.classList.add('show');
+
+  const total = q_arr.length;
+  const pct = Math.round((sc/total)*100);
+
+  document.getElementById('res-pct').textContent = pct+'%';
+  document.getElementById('r-tot').textContent = total;
+  document.getElementById('r-cor').textContent = sc;
+  document.getElementById('r-err').textContent = sw;
+
+  let msg, sub;
+  if (pct >= 85) { msg = "Excellent chirurgien !"; sub = `${sc}/${total} — Maîtrise solide de la chirurgie digestive et des urgences.`; }
+  else if (pct >= 70) { msg = "Très bon travail."; sub = `${sc}/${total} — Quelques zones à consolider.`; }
+  else if (pct >= 50) { msg = "Passable."; sub = `${sc}/${total} — Des lacunes importantes. Révisez les urgences chirurgicales.`; }
+  else { msg = "À retravailler sérieusement."; sub = `${sc}/${total} — Reprenez les bases anatomopathologiques.`; }
+
+  document.getElementById('res-msg').textContent = msg;
+  document.getElementById('res-sub').textContent = sub;
+}
+
+function restart() {
+  document.getElementById('results').classList.remove('show');
+  q_arr = shuffle(ALL_Q);
+  idx=0; sc=0; sw=0;
+  document.getElementById('quiz-wrap').style.display = 'block';
+  document.getElementById('st').textContent = q_arr.length;
+  render();
+}
+</script>
+</body>
+</html>
